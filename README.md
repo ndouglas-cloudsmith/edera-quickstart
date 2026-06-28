@@ -68,7 +68,8 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 ```bash
 systemctl status docker
 ```
-Now you are completely set up with the robust, production-ready version of Docker. You can confidently re-run ```docker login```:
+Now you are completely set up with the robust, production-ready version of Docker. <br/>
+You can confidently re-run ```docker login```:
 
 Get your license
 ===============
@@ -89,7 +90,9 @@ The installer requires the ```nft``` binary to configure networking:
 apt-get update && apt-get install -y nftables
 ```
 
-**Disposable infrastructure only.** Edera modifies your bootloader and there is no automated uninstall. Only install on instances or VMs you can terminate and recreate.
+**Disposable infrastructure only.** <br/>
+Edera modifies your bootloader and there is no automated uninstall. <br/>
+Only install on instances or VMs you are able to terminate and recreate.
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/edera-dev/learn/main/getting-started/edera-on-installer/scripts/install.sh)" -- --verbose
 ```
@@ -103,11 +106,12 @@ Since everything is already configured and patched on your disk, you just need t
 ```
 reboot
 ```
-Once the VM restarts, it will boot into the Edera hypervisor, and your Ubuntu 22.04 OS will lift up as an Edera-managed guest.
+Once the VM restarts, it will boot into the Edera hypervisor, and your ```Ubuntu 22.04``` OS will startup as an ```Edera-managed guest```.
 
 Verify the install
 ===============
-**NOTE: You might not be able to interact with the terminal for a short while during reboot**. Wait for the red popup message: ```Connection lost, trying to reconnect...```
+**NOTE: You might not be able to interact with the terminal for a short while during reboot**. <br/>
+Wait for the red popup message: ```Connection lost, trying to reconnect...```
 <br/><br/>
 Run the ```uname``` command to verify that you are running the custom Edera kernel generated during the installation process: ```Edera/Xen``` kernel
 ```bash
@@ -188,11 +192,10 @@ Type ```exit``` to leave the shell.
 🧪 Experiment 1: Container Escape
 =======================
 
-Sample command to build a Docker image using a ```Dockerfile```:
+Insert description
 
 ```bash
-cd /app
-docker build -t my-service .
+test command
 ```
 
 🧪 Experiment 2: Untrusted Code Execution
