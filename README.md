@@ -1,6 +1,5 @@
 # Edera Quickstart
-In this lab, we will provide a free, single-node tier of Edera for evaluating hardened container runtime protection on your own infrastructure. <br/>
-<br/>
+In this lab, we will setup a single-node tier of Edera for evaluating hardened container runtime protection. <br/>
 **EderaON** runs each container inside its own lightweight virtual machine, giving you hardware-level isolation that stops container escapes from reaching other workloads or the host.
 
 Pre-flight checks
@@ -106,7 +105,8 @@ Since everything is already configured and patched on your disk, you just need t
 ```
 reboot
 ```
-Once the VM restarts, it will boot into the Edera hypervisor, and your ```Ubuntu 22.04``` OS will startup as an ```Edera-managed guest```.
+Once the VM restarts, it will boot into the Edera hypervisor. <br/> 
+Your ```Ubuntu 22.04``` OS will startup as an ```Edera-managed guest```.
 
 Verify the install
 ===============
