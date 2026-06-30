@@ -189,25 +189,104 @@ uname -r
 <br/><br/>
 Type ```exit``` to leave the shell.
 
-🧪 Experiment 1: Container Escape
+
+Install Tetragon
 =======================
 
-Insert description
+Tetragon will be managed as a ```systemd``` service. <br/>
+Tetragon supports ```amd64``` & ```arm64``` architectures.
 
+1. First download the latest binary tarball, using ```curl``` for example to download the ```amd64``` release:
 ```bash
-test command
+curl -LO https://github.com/cilium/tetragon/releases/download/v1.7.0/tetragon-v1.7.0-amd64.tar.gz
+```
+
+2. Extract the downloaded archive, and start the install script:
+```bash
+tar -xvf tetragon-v1.7.0-amd64.tar.gz
+cd tetragon-v1.7.0-amd64/
+sudo ./install.sh
+cd ..
+```
+The final output should be: <br/>
+```Tetragon installed successfully!``` <br/><br/>
+3. Finally, you can check the Tetragon ```systemd``` service.
+```bash
+sudo systemctl status tetragon
+```
+The output should be similar to: <br/>
+```tetragon.service - Tetragon eBPF-based Security Observability and Runtime Enforcement```
+
+Install tetra-cli
+=======================
+
+This install method retrieves the adapted archived for your environment, extracts it and installs it into ```/usr/local/bin```:
+```bash
+curl -L https://github.com/cilium/tetragon/releases/latest/download/tetra-linux-amd64.tar.gz | tar -xz
+sudo mv tetra /usr/local/bin
+```
+
+In **Terminal 2**, check that ```tetra``` CLI is ```running```:
+```bash
+tetra status | grep -E running
+```
+
+**NOTE**: Look for the parent processes. Docker will spawn ```containerd-shim```, which in turn will hand off execution to Edera's runtime components (```styrolite``` or ```krata```).
+<br/>
+### Applying TracingPolicies natively
+The ```tetra``` CLI has built-in commands to upload policies directly to the local Tetragon server.
+<br/><br/>
+Add a policy
+```bash
+tetra tracingpolicy add kvm-trace.yaml
+```
+List currently active policies
+```bash
+tetra tracingpolicy list
+```
+The ```tetra getevents``` command communicates directly with the local Tetragon gRPC socket. <br/>
+Tetragon's CLI can format it directly, though it defaults to showing the process context. <br/>
+To see the specific ```ioctl``` arguments, using the compact printer with a ```grep``` is highly effective:
+```bash
+tetra getevents -o compact
+```
+Run this command to listen specifically for your **custom tracing policy** events:
+```bash
+tetra getevents --output json | grep -E "trace-edera-kvm
+```
+Delete a policy when you're done:
+```bash
+tetra tracingpolicy delete trace-edera-kvm
+```
+
+🧪 Experiment 1: Trigger some KVM activity
+=======================
+
+Since the policy is monitoring ```/dev/kvm``` interactions, you won't see anything until Edera actually tries to spin up or talk to a micro-VM.
+```bash
+docker run --rm -it alpine echo "Hello from Edera"
+```
+The ```sys_ioctl``` call handles all device I/O control across the system. <br/>
+If the policy feels a bit too specific or we want to see everything Edera touches at the **syscall level** without writing massive YAML files, we could alternatively stream process actions and filter by the Edera runtime name directly:
+```
+tetra getevents --process | grep -iE "styrolite|krata|containerd-shim"
+```
+Sample command to build a Docker image using a ```Dockerfile```:
+```bash
+cd /app
+docker build -t my-service .
 ```
 
 🧪 Experiment 2: Untrusted Code Execution
 =======================
-
 I haven't actually built out these scenarios. So you can move on,
-
 ```bash
 docker image ls
 ```
 
-```ghcr.io/edera-dev/edera-check:stable``` has the ```U``` flag, meaning it is locked by an existing container. If you try to remove it using ```docker rmi``` or a system prune, the engine will block the deletion to prevent breaking that container.
+```ghcr.io/edera-dev/edera-check:stable``` has the ```U``` flag, meaning it is locked by an existing container.
+If you try to remove it using ```docker rmi``` or a system prune, the engine will block the deletion to prevent breaking that container.
+
 
 🏁 Finish
 =========
