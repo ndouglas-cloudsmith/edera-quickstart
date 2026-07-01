@@ -9,9 +9,10 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-echo "🔄 Updating package index and installing prerequisites..."
+echo "🔄 Updating package index and installing prerequisites (including nftables)..."
 apt-get update
-apt-get install -y ca-certificates curl gnupg
+# Added nftables to the prerequisite installation list
+apt-get install -y ca-certificates curl gnupg nftables
 
 echo "🔑 Setting up Docker's official GPG key..."
 install -m 0755 -d /etc/apt/keyrings
@@ -30,4 +31,4 @@ apt-get update
 echo "🐳 Installing Docker Engine and plugins..."
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-echo "✅ Docker has been installed successfully!"
+echo "✅ Docker and nftables have been installed successfully!"
