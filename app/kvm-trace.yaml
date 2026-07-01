@@ -1,0 +1,13 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: "trace-edera-kvm"
+spec:
+  kprobes:
+    - call: "sys_ioctl"
+      syscall: true
+      args:
+        - index: 0
+          type: "int"
+        - index: 1
+          type: "uint32"
