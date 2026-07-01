@@ -35,82 +35,44 @@ This gives you a beautifully formatted layout showing the **OS**, **Kernel**, an
 
 Install Docker
 ===============
-### Set up Docker's Official Repository
+I put together a simple bash install script for the **Docker runtime**:
 ```bash
-apt-get update
-apt-get install -y ca-certificates curl gnupg
+chmod +x install_docker.sh
+./install_docker.sh
 ```
-
-Next, create the directory for Docker's archive keyring and download their official GPG key:
-```bash
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
-```
-
-Now, add the Docker repository to your ```apt``` sources:
-```bash
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  tee /etc/apt/sources.list.d/docker.list > /dev/null
-```
-
-### Install Docker Engine
-```bash
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
-### Verify the Installation
-
+Verify the install was successful & Docker is **Running**:
 ```bash
 systemctl status docker
 ```
-Now you are completely set up with the robust, production-ready version of Docker. <br/>
-You can confidently re-run ```docker login```:
+Now you are completely set up with the robust, production-ready version of Docker.
 
 Get your license
 ===============
-Run this command first to store the license key in your current terminal session:
+
+Check that you are using a valid Edera license key:
 ```bash
-export EDERA_LICENSE_KEY="LICENSE-KEY-123456789-V3"
+cat /var/lib/edera/protect/license.key
 ```
 
-Authenticate:
+Authenticate Docker using the license file
 ```bash
-docker login -u license -p $EDERA_LICENSE_KEY images.edera.dev
+docker login -u license -p "$(cat /var/lib/edera/protect/license.key)" images.edera.dev
 ```
 
 Install Edera
 ===============
-The installer requires the ```nft``` binary to configure networking:
-```bash
-apt-get update && apt-get install -y nftables
-```
 
 **Disposable infrastructure only.** <br/>
-Edera modifies your bootloader and there is no automated uninstall. <br/>
-Only install on instances or VMs you are able to terminate and recreate.
+Edera modifies your bootloader and there is no automated uninstall. Only install on instances or VMs you can terminate and recreate.
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/edera-dev/learn/main/getting-started/edera-on-installer/scripts/install.sh)" -- --verbose
+EDERA_LICENSE_KEY="$(cat /var/lib/edera/protect/license.key)" /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/edera-dev/learn/main/getting-started/edera-on-installer/scripts/install.sh)" -- --verbose
 ```
 
-**Note:** Because ```$EDERA_LICENSE_KEY``` is now globally available in your environment for this session, you no longer need to prefix the installation command with ```EDERA_LICENSE_KEY=....``` .
-The script will automatically pick it up.
-
-### Not seeing any changes ?
-Since everything is already configured and patched on your disk, you just need to manually trigger the ```reboot``` from your host shell:
-
-```
-reboot
-```
-Once the VM restarts, it will boot into the Edera hypervisor. <br/> 
-Your ```Ubuntu 22.04``` OS will startup as an ```Edera-managed guest```.
+Once the VM restarts, it will boot into the Edera hypervisor, and your **Ubuntu 22.04** OS will lift up as an Edera-managed guest.
 
 Verify the install
 ===============
-**NOTE: You might not be able to interact with the terminal for a short while during reboot**. <br/>
+**NOTE: You cannot interact with the terminal during reboot**. <br/>
 Wait for the red popup message: ```Connection lost, trying to reconnect...```
 <br/><br/>
 Run the ```uname``` command to verify that you are running the custom Edera kernel generated during the installation process: ```Edera/Xen``` kernel
@@ -164,16 +126,26 @@ Launch a zone
 Launching a zone typically takes less than a minute. <br/>
 If it takes longer, check logs in **Terminal 2** with: <br/>
 ```sudo journalctl -u protect-daemon -n 50```
-```
+```bash
 sudo protect zone launch -n test-zone --wait
 sudo protect zone list
 ```
-A zone in ```ready``` state is running and available.
+
+To get more info about a specific Zone in YAML output:
+```bash
+sudo protect zone list --output yaml
+```
+
+A zone in ```ready``` state is running and available. <br/>
+If not, check the logs to see why the activation failed:
+```bash
+sudo journalctl -u protect-daemon -n 20
+```
 
 Run a workload
 ===============
 Launch an interactive shell inside the zone:
-```
+```bash
 sudo protect workload launch \
   --zone test-zone \
   --name alpine-shell \
@@ -182,13 +154,22 @@ sudo protect workload launch \
 ```
 
 Once inside, run ```uname -r``` to confirm you’re running in an isolated zone with its own kernel:
-```
+```bash
 uname -r
 ```
 **Expected:** ```6.18.18```
 <br/><br/>
 Type ```exit``` to leave the shell.
 
+### Create long-lived workloads
+```
+sudo protect workload launch --zone test-zone --name alpine-long -- docker.io/library/alpine:latest sleep 3600
+sudo protect workload launch --zone test-zone --name ubuntu-test docker.io/library/ubuntu:latest sleep 10
+```
+Check that the workload is running:
+```
+sudo protect workload list
+```
 
 Install Tetragon
 =======================
@@ -232,52 +213,52 @@ tetra status | grep -E running
 ```
 
 **NOTE**: Look for the parent processes. Docker will spawn ```containerd-shim```, which in turn will hand off execution to Edera's runtime components (```styrolite``` or ```krata```).
-<br/>
-### Applying TracingPolicies natively
+
+🧪 Experiment 1: Trigger some KVM activity
+===============
 The ```tetra``` CLI has built-in commands to upload policies directly to the local Tetragon server.
 <br/><br/>
-Add a policy
+Add a the KVM monitoring ```policy```:
 ```bash
+cd /app/
 tetra tracingpolicy add kvm-trace.yaml
 ```
-List currently active policies
+List currently ```active``` policies
 ```bash
 tetra tracingpolicy list
 ```
-The ```tetra getevents``` command communicates directly with the local Tetragon gRPC socket. <br/>
-Tetragon's CLI can format it directly, though it defaults to showing the process context. <br/>
-To see the specific ```ioctl``` arguments, using the compact printer with a ```grep``` is highly effective:
+The ```tetra getevents``` command communicates directly with the local Tetragon gRPC socket.
+Tetragon's CLI can format it directly, though it defaults to showing the process context.
+To see the specific **[IOCTL](https://en.wikipedia.org/wiki/Ioctl)** arguments, using the compact printer with a ```grep``` is highly effective:
 ```bash
 tetra getevents -o compact
-```
-Run this command to listen specifically for your **custom tracing policy** events:
-```bash
-tetra getevents --output json | grep -E "trace-edera-kvm
 ```
 Delete a policy when you're done:
 ```bash
 tetra tracingpolicy delete trace-edera-kvm
 ```
 
-🧪 Experiment 1: Trigger some KVM activity
+🧪 Experiment 2: Edera Filesystem (FIM) activity
 =======================
 
-Since the policy is monitoring ```/dev/kvm``` interactions, you won't see anything until Edera actually tries to spin up or talk to a micro-VM.
+Add a the FIM monitoring ```policy```:
+```bash
+tetra tracingpolicy add edera-fs.yaml
+tetra tracingpolicy list
+```
+
+Since the policy is monitoring ```/dev/kvm``` interactions, you won't see anything until Edera actually tries to spin up or talk to a micro-VM. <br/>
+In **Terminal 1** run:
 ```bash
 docker run --rm -it alpine echo "Hello from Edera"
 ```
-The ```sys_ioctl``` call handles all device I/O control across the system. <br/>
-If the policy feels a bit too specific or we want to see everything Edera touches at the **syscall level** without writing massive YAML files, we could alternatively stream process actions and filter by the Edera runtime name directly:
+The ```sys_ioctl``` call handles all device I/O control across the system. <br/><br/>
+In **Terminal 2**, If the policy feels a bit too specific or we want to see everything Edera touches at the **syscall level** without writing massive YAML files, we could alternatively stream process actions and filter by the Edera runtime name directly:
 ```
-tetra getevents --process | grep -iE "styrolite|krata|containerd-shim"
-```
-Sample command to build a Docker image using a ```Dockerfile```:
-```bash
-cd /app
-docker build -t my-service .
+tetra getevents -o compact --process "styrolite|krata|containerd-shim"
 ```
 
-🧪 Experiment 2: Untrusted Code Execution
+🧪 Experiment 3: Untrusted Code Execution
 =======================
 I haven't actually built out these scenarios. So you can move on,
 ```bash
@@ -286,7 +267,6 @@ docker image ls
 
 ```ghcr.io/edera-dev/edera-check:stable``` has the ```U``` flag, meaning it is locked by an existing container.
 If you try to remove it using ```docker rmi``` or a system prune, the engine will block the deletion to prevent breaking that container.
-
 
 🏁 Finish
 =========
