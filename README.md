@@ -171,6 +171,48 @@ Check that the workload is running:
 sudo protect workload list
 ```
 
+Understanding Zones
+=======================
+
+Create a throttled zone to **prevent CPU/Memory abuse** - ```cryptojacking``` etc..
+```
+sudo protect zone launch --name throttled-zone \
+  --min-cpus 1 --max-cpus 2 --target-cpus 1 \
+  --min-memory 128 --max-memory 512 --target-memory 256 \
+  --resource-adjustment-policy dynamic
+```
+
+Create different types of Edera Protect Zones:
+```
+sudo protect zone launch --name dark-zone --network-backend none
+sudo protect zone launch --name hardware-isolated-zone --virt-backend pvh
+```
+
+List the Zones:
+```
+sudo protect zone list --output yaml
+```
+
+Manage the ```host``` of **Edera Protect**:
+```
+sudo protect host --help
+```
+
+Get general info about the ```host```
+```
+sudo protect host status
+```
+
+Display information about the ```host``` **CPU topology**
+```
+sudo protect host cpu-topology
+```
+
+Display the **Hypervisor Console**  ```hv-console``` output
+```
+sudo protect host hv-console
+```
+
 Install Tetragon
 =======================
 
