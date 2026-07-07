@@ -182,7 +182,9 @@ sudo protect zone launch --name throttled-zone \
   --resource-adjustment-policy dynamic
 ```
 
-Create different types of Edera Protect Zones:
+```PVH``` (Paravirtualisation Light) is a virtualisation mode that combines the best parts of two older virtualisation methods:
+- ```PV``` (Paravirtualisation) and
+- ```HVM``` (Hardware Virtual Machine).
 ```
 sudo protect zone launch --name dark-zone --network-backend none
 sudo protect zone launch --name hardware-isolated-zone --virt-backend pvh
