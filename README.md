@@ -195,6 +195,12 @@ sudo protect zone launch --name hardware-isolated-zone --virt-backend pvh
 | ```HVM```  | Fully simulates a real physical machine using hardware extensions (like ```Intel VT-x``` or ```AMD-V```). <br/>Guest OS doesn't know it's virtualised.  | Very secure isolation, but slow boot times and performance overhead due to emulating old hardware (like ```BIOS``` or ```PCI buses```).  |
 | ```PVH```  | Uses hardware virtualization features (like ```HVM```) to boot the OS securely, but skips all the slow, unneeded legacy hardware emulation by using lightweight PV interfaces for basic tasks. | Extremely fast boot times <br/> Minimal Overhead <br/> And a tiny security attack surface. |
 
+Why use ```--virt-backend pvh``` for a hardware-isolated-zone?
+=======================
+When launching a secure, hardware-isolated zone, security and speed are paramount. By choosing ```pvh``` as your backend:
+1. **Minimal Attack Surface**: Because there is no emulated QEMU device model, there are fewer vulnerabilities for an attacker to exploit to break out of the zone.
+2. **Performance**: It allows the zone to boot almost instantly and run at near-native hardware speeds while remaining completely isolated from the host and other zones.
+
 <br/>
 
 List ```Zones```:
