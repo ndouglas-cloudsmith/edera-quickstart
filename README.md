@@ -193,7 +193,7 @@ sudo protect zone launch --name hardware-isolated-zone --virt-backend pvh
 | ------------- | ------------- | ------------- |
 | ```PV```  | The guest OS is modified to know it's virtualised and makes direct software calls (hypercalls) instead of using hardware emulation.  | Fast, but has a larger security attack surface due to complex software interfaces. |
 | ```HVM```  | Fully simulates a real physical machine using hardware extensions (like ```Intel VT-x``` or ```AMD-V```). The guest OS doesn't know it's virtualised.  | Very secure isolation, but slow boot times and performance overhead due to emulating old hardware (like ```BIOS``` or ```PCI buses```).  |
-| ```PVH```  | Uses hardware virtualization features (like ```HVM```) to boot the OS securely, but skips all the slow, unneeded legacy hardware emulation by using lightweight paravirtualised interfaces for basic system tasks. | Extremely fast boot times, minimal overhead, and a tiny security attack surface. |
+| ```PVH```  | Uses hardware virtualization features (like ```HVM```) to boot the OS securely, but skips all the slow, unneeded legacy hardware emulation by using lightweight PV interfaces for basic tasks. | Extremely fast boot times, minimal overhead, and a tiny security attack surface. |
 
 <br/>
 
