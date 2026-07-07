@@ -198,8 +198,8 @@ sudo protect zone launch --name hardware-isolated-zone --virt-backend pvh
 Why use ```--virt-backend pvh``` for a hardware-isolated-zone?
 =======================
 When launching a secure, hardware-isolated zone, security and speed are paramount. By choosing ```pvh``` as your backend:
-1. **Minimal Attack Surface**: Because there is no emulated **[QEMU device model](https://www.qemu.org/2018/02/09/understanding-qemu-devices)**, there are fewer vulnerabilities for an attacker to exploit to break out of the zone.
-2. **Performance**: It allows the zone to boot almost instantly and run at near-native hardware speeds while remaining completely isolated from the host and other zones.
+1. Because there's no emulated **[QEMU device model](https://www.qemu.org/2018/02/09/understanding-qemu-devices)**, there are **fewer vulnerabilities** for attackers to exploit to break out of zones.
+2. The zone boots almost instantly and runs at **near-native hardware speeds** while remaining completely isolated from the ```host``` & other ```zones```.
 
 <br/>
 
