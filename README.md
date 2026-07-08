@@ -40,11 +40,30 @@ I put together a simple bash install script for the **Docker runtime**:
 chmod +x install_docker.sh
 ./install_docker.sh
 ```
+
 Verify the install was successful & Docker is **Running**:
 ```bash
 systemctl status docker
 ```
+
+Now you are completely set up with the robust, production-ready version of Docker. <br/>
+Let's start by creating a Docker container to prove there's no isolation from the host:
+
+
+```bash
+docker run --rm docker.io/library/alpine:latest uname -r
+```
+
+Exiting the container and running the same command matches the host exactly.
+```bash
+uname -r
+```
+
+- The ```--rm``` flag automatically cleans up and removes the container after it exits.
+- The ```uname -r``` cmd overrides the default container startup command to execute the kernel check immediately.
+
 Now you are completely set up with the robust, production-ready version of Docker.
+
 
 Get your license
 ===============
