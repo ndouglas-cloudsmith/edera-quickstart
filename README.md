@@ -4,6 +4,7 @@ In this lab, we will setup a single-node tier of Edera for evaluating hardened c
 
 Pre-flight checks
 ===============
+
 The quickest way to see both the **architecture** and the **operating system** is by running:
 ```bash
 uname -a
@@ -40,30 +41,27 @@ I put together a simple bash install script for the **Docker runtime**:
 chmod +x install_docker.sh
 ./install_docker.sh
 ```
-
 Verify the install was successful & Docker is **Running**:
 ```bash
 systemctl status docker
 ```
-
 Now you are completely set up with the robust, production-ready version of Docker. <br/>
 Let's start by creating a Docker container to prove there's no isolation from the host:
 
-
+The ```uname -r``` command shows the Kernel ```release``` version you are running
 ```bash
 docker run --rm docker.io/library/alpine:latest uname -r
 ```
-
-Exiting the container and running the same command matches the host exactly.
+The ```--rm``` flag automatically cleans up and removes the container after it exits. <br/>
+Alternatively, you can shell into the container and play around with ```uname``` command:
+```bash
+docker run --rm -it docker.io/library/alpine:latest sh
+``````
+Running the same command on the host should match this output exactly.
 ```bash
 uname -r
 ```
-
-- The ```--rm``` flag automatically cleans up and removes the container after it exits.
-- The ```uname -r``` cmd overrides the default container startup command to execute the kernel check immediately.
-
-Now you are completely set up with the robust, production-ready version of Docker.
-
+This simple exercise proves the **[Shared Kernel Problem](https://edera.dev/stories/the-shared-kernel-is-the-real-problem-in-container-security)** in containers and Kubernetes.
 
 Get your license
 ===============
@@ -99,7 +97,11 @@ Run the ```uname``` command to verify that you are running the custom Edera kern
 uname -r | grep 'edera'
 ```
 **Expected:** ```6.x.y-edera```
-
+<br/><br/>
+Verify the services are running:
+```bash
+ps auxww | grep protect
+```
 ### systemd-detect-virt
 This utility checks the **[CPUID](https://en.wikipedia.org/wiki/CPUID)** and system interfaces to see if the environment is virtualised:
 ```bash
@@ -127,18 +129,17 @@ ls /proc/xen
 <br/><br/>
 Check the daemon is running:
 ```bash
-sudo systemctl is-active protect-daemon | grep --color=always -E "active|$"
+systemctl is-active protect-daemon | grep --color=always -E "active|$"
 ```
 **Expected:** ```active```
 <br/><br/>
 ```activating``` is not the same as ```active```. <br/>
-The daemon should become ```active``` within seconds.
+The daemon should become ```active``` within seconds. <br/>
+If everything is **active**, you can proceed with the lab.
 <br/><br/>
 If it stays in ```activating```, it failed to start. <br/>
 A missing or invalid license key is a common cause. <br/>
 Check logs with ```sudo journalctl -u protect-daemon -n 50```.
-<br/><br/>
-If everything is **active**, you can proceed with the lab.
 
 Launch a zone
 ===============
@@ -146,26 +147,28 @@ Launching a zone typically takes less than a minute. <br/>
 If it takes longer, check logs in **Terminal 2** with: <br/>
 ```sudo journalctl -u protect-daemon -n 50```
 ```bash
-sudo protect zone launch -n test-zone --wait
-sudo protect zone list
+protect zone launch -n test-zone --wait
+protect zone list
 ```
 
 To get more info about a specific Zone in YAML output:
 ```bash
-sudo protect zone list --output yaml
+protect zone list --output yaml | grep --color=always -E "ZONE_VIRTUALIZATION_BACKEND_AUTOMATIC|$"
 ```
 
 A zone in ```ready``` state is running and available. <br/>
 If not, check the logs to see why the activation failed:
 ```bash
-sudo journalctl -u protect-daemon -n 20
+journalctl -u protect-daemon -n 20 | sed \
+  -e 's/\bINFO\b/\x1b[32m&\x1b[0m/g' \
+  -e 's/\bWARN\b/\x1b[31m&\x1b[0m/g'
 ```
 
 Run a workload
 ===============
 Launch an interactive shell inside the zone:
 ```bash
-sudo protect workload launch \
+protect workload launch \
   --zone test-zone \
   --name alpine-shell \
   -t -a \
@@ -176,26 +179,30 @@ Once inside, run ```uname -r``` to confirm you’re running in an isolated zone 
 ```bash
 uname -r
 ```
-**Expected:** ```6.18.18```
+The ```6.18.XX``` output from ```uname -r``` is the version of the **dedicated zone kernel** that Edera booted specifically for your ```test-zone```.
+- Exiting the container and running ```uname -r``` again should show ```6.18.XX-edera``` - proving the container is not on the shared kernel
+- In a traditional container, running ```uname -r``` inside a container simply returns the host's kernel version, because all containers share a single host kernel.
+- The output confirms that ```6.18.XX``` is not your host's shared kernel, but a completely isolated kernel running inside a **Type-1 hypervisor micro-VM**.
 <br/><br/>
 Type ```exit``` to leave the shell.
 
 ### Create long-lived workloads
-```
-sudo protect workload launch --zone test-zone --name alpine-long -- docker.io/library/alpine:latest sleep 3600
-sudo protect workload launch --zone test-zone --name ubuntu-test docker.io/library/ubuntu:latest sleep 10
+```bash
+protect workload launch --zone test-zone --name alpine-long -- docker.io/library/alpine:latest sleep 3600
+protect workload launch --zone test-zone --name ubuntu-test docker.io/library/ubuntu:latest sleep 10
 ```
 Check that the workload is running:
-```
-sudo protect workload list
+```bash
+protect workload list
+protect zone list
 ```
 
 Understanding Zones
 =======================
 
 Create a throttled zone to **prevent CPU/Memory abuse** - ```cryptojacking``` etc..
-```
-sudo protect zone launch --name throttled-zone \
+```bash
+protect zone launch --name throttled-zone \
   --min-cpus 1 --max-cpus 2 --target-cpus 1 \
   --min-memory 128 --max-memory 512 --target-memory 256 \
   --resource-adjustment-policy dynamic
@@ -208,6 +215,7 @@ sudo protect zone launch --name throttled-zone \
 sudo protect zone launch --name dark-zone --network-backend none
 sudo protect zone launch --name hardware-isolated-zone --virt-backend pvh
 ```
+
 | Virtualisation Mode | Description | Performance & Security |
 | ------------- | ------------- | ------------- |
 | ```PV```  | Guest OS is modified to know it's virtualised. Makes direct software calls (**[hypercalls](https://wiki.xenproject.org/wiki/Hypercall)**) instead of hardware emulation.  | Fast, but has a larger security attack surface due to complex software interfaces. |
@@ -222,29 +230,78 @@ When launching a secure, hardware-isolated zone, security and speed are paramoun
 
 <br/>
 
-List ```Zones```:
+List the ```Zones```:
+```bash
+protect zone list
 ```
-sudo protect zone list --output yaml
+
+Checking the logs, we can get a **WARNING** <br/>
+```runtime failed to create zone: failed to create domain: xen platform error: xencall issue encountered: kernel error: EINVAL: Invalid argument```
+```bash
+journalctl -u protect-daemon -n 20 | sed \
+  -e 's/\bINFO\b/\x1b[32m&\x1b[0m/g' \
+  -e 's/\bWARN\b/\x1b[31m&\x1b[0m/g'
+```
+
+The ```hardware-isolated-zone``` should be in a ```failed``` state. <br/>
+List the YAML output for the ```hardware-isolated-zone``` Zone to understand what caused the failure.
+```bash
+protect zone list --output yaml | grep -B 15 -A 20 "'hardware-isolated-zone'"
 ```
 
 Manage the ```host``` of **Edera Protect**:
-```
-sudo protect host --help
+```bash
+protect host --help
 ```
 
 Get general info about the ```host```
-```
-sudo protect host status
+```bash
+protect host status
 ```
 
 Display information about the ```host``` **CPU topology**
-```
-sudo protect host cpu-topology
+```bash
+protect host cpu-topology
 ```
 
 Display the **Hypervisor Console**  ```hv-console``` output
+```bash
+protect host hv-console
 ```
-sudo protect host hv-console
+
+Enable Kernel Verbose Logging
+=======================
+
+You can optionally **[enable kernel verbose logging](https://docs.edera.dev/guides/standalone/no-kubernetes/#optional-enable-kernel-verbose-logging)** <br/>
+To see the detailed logs from the zone’s kernel:
+```bash
+protect zone launch --name zone-test --kernel-verbose
+protect zone logs zone-test
+```
+
+To launch with a specific kernel version:
+```bash
+protect zone launch \
+  --name zone-test \
+  --kernel-verbose \
+  --kernel ghcr.io/edera-dev/zone-kernel:latest
+```
+
+Once your zone is up, you can launch workloads using standard container images:
+```
+protect workload launch \
+  --zone zone-test \
+  --name nginx-test \
+  docker.io/library/nginx:alpine
+```
+
+Check which images are cached:
+```
+protect image list
+```
+Verify the workload is running:
+```
+protect workload list
 ```
 
 Install Tetragon
@@ -269,7 +326,7 @@ The final output should be: <br/>
 ```Tetragon installed successfully!``` <br/><br/>
 3. Finally, you can check the Tetragon ```systemd``` service.
 ```bash
-sudo systemctl status tetragon
+systemctl status tetragon
 ```
 The output should be similar to: <br/>
 ```tetragon.service - Tetragon eBPF-based Security Observability and Runtime Enforcement```
@@ -330,7 +387,7 @@ docker run --rm -it alpine echo "Hello from Edera"
 ```
 The ```sys_ioctl``` call handles all device I/O control across the system. <br/><br/>
 In **Terminal 2**, If the policy feels a bit too specific or we want to see everything Edera touches at the **syscall level** without writing massive YAML files, we could alternatively stream process actions and filter by the Edera runtime name directly:
-```
+```bash
 tetra getevents -o compact --process "styrolite|krata|containerd-shim"
 ```
 
