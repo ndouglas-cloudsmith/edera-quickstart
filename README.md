@@ -452,8 +452,8 @@ sudo xorriso -indev /var/lib/libvirt/boot/ubuntu-24.04.4-live-server-arm64.iso -
 "**[El Torito](https://bugzilla.redhat.com/show_bug.cgi?id=1525458)**" is the standard extension spec that allows a CD-ROM/ISO to be bootable.<br/>
 The ```as_mkisofs``` modifier tells ```xorriso``` to output the boot config formatted as the exact CLI params you would need if you wanted to recreate/modify bootable ISOs using the ```mkisofs``` tool.
 <br/><br/>
-People usually run this command when they want to remaster a custom Ubuntu ISO (like creating an unattended/automated "```Autoinstall```" image)<br/>
-and need to know the precise boot images, partition layouts, and emulation settings required to keep new ISO bootable for ```ARM64/UEFI``` architecture.
+People usually run this command when they want to remaster a custom Ubuntu ISO (like creating an unattended "```Autoinstall```" image)<br/>
+and need to know precise boot images, partition layouts, and emulation settings required to keep new ISO bootable for ```ARM64/UEFI```.
 <br/><br/>
 Install the VM based on ISO provided and associated config:
 ```
@@ -471,7 +471,8 @@ sudo virt-install \
 
 Together, these commands are used to completely and permanently delete a VM and its associated data from a KVM/QEMU host.<br/>
 First, ```virsh destroy``` forcefully halts the running VM (like pulling the power plug) because a running VM cannot be deleted.<br/>
-Next, ```virsh undefine --nvram``` removes the VM’s XML configuration file from ```libvirt``` alongside its NVRAM file (which stores UEFI boot settings), essentially wiping the VM from the system's registry. 
+Next, ```virsh undefine --nvram``` removes the VM’s XML config file from ```libvirt``` alongside its NVRAM file<br/>
+(which stores UEFI boot settings), essentially wiping the VM from the system's registry.<br/><br/>
 Finally, ```virsh vol-delete``` permanently deletes the actual virtual hard drive file (```ubuntu2404-test.qcow2```) from the ```default``` storage pool, freeing up the disk space on the physical host.
 ```
 virsh destroy ubuntu2404-test
@@ -488,7 +489,7 @@ ls -lh ubuntu-24.04.4-live-server-arm64.iso
 sudo ls -lh /var/lib/libvirt/boot/
 ```
 
-Use ```virsh edit ubuntu2404-test``` to safely modify the underlying XML configuration file of that specific VM, allowing you to fine-tune hardware settings.. such as adjusting CPU topologies, pinning RAM, or adding virtual hardware components like a custom CD-ROM drive, while also ensuring that ```libvirt``` instantly validates your syntax before applying the changes to prevent the VM from becoming unbootable.
+Use ```virsh edit ubuntu2404-test``` to safely modify the underlying XML configuration file of that specific VM, allowing you to fine-tune hardware settings.. such as adjusting CPU topologies, pinning RAM, or adding virtual hardware components like a custom CD-ROM drive, while also ensuring that ```libvirt``` instantly validates the syntax before applying changes to prevent VMs becoming unbootable.
 ```
 virsh edit ubuntu2404-test
 ```
