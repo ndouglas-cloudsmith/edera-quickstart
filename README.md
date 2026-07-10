@@ -473,7 +473,8 @@ Together, these commands are used to completely and permanently delete a VM and 
 First, ```virsh destroy``` forcefully halts the running VM (like pulling the power plug) because a running VM cannot be deleted.<br/>
 Next, ```virsh undefine --nvram``` removes the VM’s XML config file from ```libvirt``` alongside its NVRAM file<br/>
 (which stores UEFI boot settings), essentially wiping the VM from the system's registry.<br/><br/>
-Finally, ```virsh vol-delete``` permanently deletes the actual virtual hard drive file (```ubuntu2404-test.qcow2```) from the ```default``` storage pool, freeing up the disk space on the physical host.
+Finally, ```virsh vol-delete``` permanently deletes the actual virtual hard drive file (```ubuntu2404-test.qcow2```)<br/>
+from the ```default``` storage pool, freeing up the disk space on the physical host.
 ```
 virsh destroy ubuntu2404-test
 virsh undefine ubuntu2404-test --nvram
