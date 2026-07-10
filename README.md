@@ -431,6 +431,9 @@ virsh dumpxml ubuntu2404-test | grep loader -A5
 virsh dumpxml ubuntu2404-test | grep -A10 -B2 cdrom
 ```
 
+<img width="3056" height="1810" alt="terminal" src="https://github.com/user-attachments/assets/0b2509f5-f742-41cd-afc8-05b045d85a62" />
+
+
 ```
 sudo ls -lh /var/lib/libvirt/boot/
 sudo xorriso -indev /var/lib/libvirt/boot/ubuntu-24.04.4-live-server-arm64.iso -report_el_torito as_mkisofs
