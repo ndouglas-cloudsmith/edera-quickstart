@@ -401,7 +401,68 @@ docker image ls
 ```ghcr.io/edera-dev/edera-check:stable``` has the ```U``` flag, meaning it is locked by an existing container.
 If you try to remove it using ```docker rmi``` or a system prune, the engine will block the deletion to prevent breaking that container.
 
-🏁 Finish
+
+
+KVM on Raspberry Pi
 =========
 
-To complete the challenge, press **Check**.
+```
+ssh nigel@100.95.180.101
+```
+
+```
+virsh list --all
+```
+
+```
+virsh dominfo ubuntu2404-test
+```
+
+```
+virsh vol-list default
+```
+
+```
+virsh net-dhcp-leases default
+```
+
+```
+virsh dumpxml ubuntu2404-test | grep loader -A5
+virsh dumpxml ubuntu2404-test | grep -A10 -B2 cdrom
+```
+
+```
+sudo ls -lh /var/lib/libvirt/boot/
+sudo xorriso -indev /var/lib/libvirt/boot/ubuntu-24.04.4-live-server-arm64.iso -report_el_torito as_mkisofs
+```
+
+```
+sudo virt-install \
+  --name ubuntu2404-test \
+  --memory 3072 \
+  --vcpus 2 \
+  --disk pool=default,size=20,format=qcow2 \
+  --os-variant ubuntu24.04 \
+  --cdrom /var/lib/libvirt/boot/ubuntu-24.04.4-live-server-arm64.iso \
+  --network network=default \
+  --graphics none \
+  --console pty,target_type=serial
+```
+
+```
+virsh destroy ubuntu2404-test
+virsh undefine ubuntu2404-test --nvram
+virsh vol-delete ubuntu2404-test.qcow2 --pool default
+```
+
+```
+cd ~/isos
+wget -O ubuntu-24.04.4-live-server-arm64.iso \
+https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.4-live-server-arm64.iso
+ls -lh ubuntu-24.04.4-live-server-arm64.iso
+sudo ls -lh /var/lib/libvirt/boot/
+```
+
+```
+virsh edit ubuntu2404-test
+```
