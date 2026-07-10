@@ -406,26 +406,35 @@ If you try to remove it using ```docker rmi``` or a system prune, the engine wil
 KVM on Raspberry Pi
 =========
 
+Tailscale command:
 ```
 ssh nigel@100.95.180.101
 ```
 
+#### virsh - CLI for managing KVM/QEMU VMs
+We using this tool to manage ```domains``` via the ```libvirt``` management tool.
+<br/><br/>
+Lists the VMs on the host.
 ```
 virsh list --all
 ```
-
+Fetches basic metadata and status info for a specific VM:
 ```
 virsh dominfo ubuntu2404-test
 ```
-
+Lists all virtual storage volumes (disk images like ```.qcow2``` or ```.raw``` files)<br/>
+The volumes existi inside a specific storage pool named ```default```.
 ```
 virsh vol-list default
 ```
-
+Displays the current DHCP network leases assigned to VMs.<br/>
+Our VM is connected to the virtual network named ```default```.
 ```
 virsh net-dhcp-leases default
 ```
 
+Extract the raw XML config file of the VM<br/>
+Filters it to look at the ```bootloader```, firmware and CD ROM configs.
 ```
 virsh dumpxml ubuntu2404-test | grep loader -A5
 virsh dumpxml ubuntu2404-test | grep -A10 -B2 cdrom
