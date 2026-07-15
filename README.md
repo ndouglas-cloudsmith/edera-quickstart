@@ -89,7 +89,8 @@ docker run --pull always --pid host --privileged \
 - If anything fails, address the issue before proceeding.
 
 **Disposable infrastructure only.** <br/>
-Edera modifies your bootloader and there is no automated uninstall. Only install on instances or VMs you can terminate and recreate.
+Edera modifies your bootloader and there is no automated uninstall.<br/>
+Only install on instances or VMs you can terminate and recreate.
 ```bash
 EDERA_LICENSE_KEY="$(cat /var/lib/edera/protect/license.key)" /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/edera-dev/learn/main/getting-started/edera-on-installer/scripts/install.sh)" -- --verbose
 ```
