@@ -79,6 +79,15 @@ docker login -u license -p "$(cat /var/lib/edera/protect/license.key)" images.ed
 Install Edera
 ===============
 
+Before installing, run **[edera-check](https://docs.edera.dev/reference/configuration/edera-check/)** to confirm your system meets all requirements:
+```bash
+docker run --pull always --pid host --privileged \
+  ghcr.io/edera-dev/edera-check:stable preinstall
+```
+
+- All Required checks should pass.
+- If anything fails, address the issue before proceeding.
+
 **Disposable infrastructure only.** <br/>
 Edera modifies your bootloader and there is no automated uninstall. Only install on instances or VMs you can terminate and recreate.
 ```bash
