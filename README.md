@@ -505,3 +505,5 @@ Use ```virsh edit ubuntu2404-test``` to safely modify the underlying XML configu
 ```
 virsh edit ubuntu2404-test
 ```
+
+**Google Cloud VM Image** - ```ubuntu-os-cloud/ubuntu-2204-lts```
