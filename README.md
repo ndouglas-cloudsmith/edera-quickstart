@@ -82,7 +82,8 @@ Install Edera
 Before installing, run **[edera-check](https://docs.edera.dev/reference/configuration/edera-check/)** to confirm your system meets all requirements:
 ```bash
 docker run --pull always --pid host --privileged \
-  ghcr.io/edera-dev/edera-check:stable preinstall
+  ghcr.io/edera-dev/edera-check:stable preinstall \
+  | sed -e 's/\([Pp]assed\)/\x1b[32m\1\x1b[0m/g' -e 's/\([Ff]ailed\)/\x1b[31m\1\x1b[0m/g'
 ```
 
 - All Required checks should pass.
