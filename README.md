@@ -311,25 +311,30 @@ protect host hv-console
 Enable Kernel Verbose Logging
 =======================
 
-You can optionally **[enable kernel verbose logging](https://docs.edera.dev/guides/standalone/no-kubernetes/#optional-enable-kernel-verbose-logging)** <br/>
-To see the detailed logs from the zone’s kernel:
+Destroy the old ```test-zone``` Zone:
 ```bash
-protect zone launch --name zone-test --kernel-verbose
-protect zone logs zone-test
+protect zone destroy test-zone
+```
+
+You can optionally **[enable kernel verbose logging](https://docs.edera.dev/guides/standalone/no-kubernetes/#optional-enable-kernel-verbose-logging)** <br/>
+To see the detailed logs from the Zone’s kernel:
+```bash
+protect zone launch --name test-zone --kernel-verbose
+protect zone logs test-zone
 ```
 
 To launch with a specific kernel version:
 ```bash
 protect zone launch \
-  --name zone-test \
+  --name test-zone \
   --kernel-verbose \
   --kernel ghcr.io/edera-dev/zone-kernel:latest
 ```
 
-Once your zone is up, you can launch workloads using standard container images:
+Once your Zone is up, you can launch workloads using standard container images:
 ```
 protect workload launch \
-  --zone zone-test \
+  --zone test-zone \
   --name nginx-test \
   docker.io/library/nginx:alpine
 ```
