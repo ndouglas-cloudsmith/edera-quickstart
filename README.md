@@ -71,6 +71,12 @@ This simple exercise proves the **[Shared Kernel Problem](https://edera.dev/stor
 Get your license
 ===============
 
+Make sure you're using a valid **license key** for Edera:
+```bash
+chmod +x setup_license.sh
+./setup_license.sh
+```
+
 Check that you are using a valid Edera license key:
 ```bash
 cat /var/lib/edera/protect/license.key
