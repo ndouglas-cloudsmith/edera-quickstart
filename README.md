@@ -111,6 +111,12 @@ Once the VM restarts, it will boot into the Edera hypervisor, and your **Ubuntu 
 
 Verify the install
 ===============
+
+Jump into a new ```bash``` session if failed to start on reboot:
+```bash
+bash
+```
+
 **NOTE: You cannot interact with the terminal during reboot**. <br/>
 Wait for the red popup message: ```Connection lost, trying to reconnect...```
 <br/><br/>
