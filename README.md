@@ -5,9 +5,13 @@ In this lab, we will setup a single-node tier of Edera for evaluating hardened c
 Pre-flight checks
 ===============
 
-The quickest way to see both the **architecture** and the **operating system** is by running:
+Start an interactive ```bash``` session:
 ```bash
 bash
+```
+
+The quickest way to see both the **architecture** and the **operating system** is by running:
+```bash
 uname -a
 ```
 This will print your system information in a single line, including:
