@@ -7,6 +7,7 @@ Pre-flight checks
 
 The quickest way to see both the **architecture** and the **operating system** is by running:
 ```bash
+bash
 uname -a
 ```
 This will print your system information in a single line, including:
