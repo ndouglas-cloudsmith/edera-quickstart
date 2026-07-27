@@ -231,6 +231,11 @@ protect workload list
 protect zone list
 ```
 
+List the ```yaml``` output information associated with running workloads:
+```
+protect workload list --output yaml
+```
+
 Understanding Zones
 =======================
 
